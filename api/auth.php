@@ -72,14 +72,14 @@ class Auth extends REST {
         exit;
     }
 
-    public function auth($data) {
+    public function signin($data) {
 
         $uControl = new UserControl();
         
-        if(!isset($data["email"]) || trim($data["email"]) == "") {
+        if(!isset($data["loguser"]) || trim($data["loguser"]) == "") {
             $this->response(json_encode([
                 "error" => "403-1",
-                "msg" => "El campo email es necesario"
+                "msg" => "El campo Usuario es necesario"
                 ]), 403);
             return;
         }
@@ -94,7 +94,7 @@ class Auth extends REST {
         
         
         $filter = [ 
-            "email" => trim($data["email"]),
+            "loguser" => trim($data["loguser"]),
             "getroles" => true
         ];
         $userlst = $uControl->getALLUsers($filter);

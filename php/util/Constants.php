@@ -2,7 +2,7 @@
 
 $CONFIG = array();
 
-$CONFIG['env'] = "prd"; // prd : for pruction , test: for testing
+$CONFIG['env'] = "test"; // prd : for pruction , test: for testing
 
 $CONFIG['database'] = [
     "test" => [

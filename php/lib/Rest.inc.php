@@ -11,9 +11,9 @@
 		private $_method = "";		
 		private $_code = 200;
 		
-		public function __construct(){
+		/*public function __construct(){
 			$this->inputs();
-		}
+		}*/
 		
 		public function get_referer(){
 			return $_SERVER['HTTP_REFERER'];

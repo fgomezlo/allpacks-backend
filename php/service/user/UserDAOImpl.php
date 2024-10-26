@@ -106,6 +106,11 @@ class UserDAOImpl extends mysql {
             $filter .= ( $where ? " AND " : " WHERE " ) . " `allpack_usuario`.mail_usuario like '" . $arrayfilter["email"] . "'";
             $where = true;
         }
+        
+        if (isset($arrayfilter["loguser"]) && $arrayfilter["loguser"] != null) {
+            $filter .= ( $where ? " AND " : " WHERE " ) . " `allpack_usuario`.log_usuario like '" . $arrayfilter["loguser"] . "'";
+            $where = true;
+        }
 
         if (isset($arrayfilter["like"]) && $arrayfilter["like"] != null) {
             $filter .= ( $where ? " AND " : " WHERE " ) . " `allpack_usuario`.nombre_usuario like '%" . $arrayfilter["like"] . "%'";

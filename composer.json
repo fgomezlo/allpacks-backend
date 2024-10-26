@@ -1,6 +1,6 @@
 {
-    "name": "franciscogomezlopez/tio-san-financiero-backend",
-    "description": "Servicios Rest for tio-san-financiero-platform",
+    "name": "franciscogomezlopez/allpacks-backend",
+    "description": "Servicios Rest for allpacks-backend",
     "require": {
         "php": "^7.1.0|^8.0",
         "firebase/php-jwt": "^6.4",
@@ -10,13 +10,17 @@
     "license": "GPL",
     "autoload": {
         "psr-4": {
-            "Franciscogomezlopez\\TioSanFinancieroBackend\\": "src/"
+            "Franciscogomezlopez\\allpacks-backend\\": "src/"
         }
     },
     "authors": [
         {
-            "name": "FRANCISCO GOMEZ LOPEZ",
-            "email": "gerenciait@fvf.com.ve"
+            "name": "FRANCISCO GOMEZ LOPEZ"
         }
-    ]
+    ],
+    "config": {
+        "platform": {
+            "php": "7.4.33"
+        }
+    }
 }

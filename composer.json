@@ -1,0 +1,22 @@
+{
+    "name": "franciscogomezlopez/tio-san-financiero-backend",
+    "description": "Servicios Rest for tio-san-financiero-platform",
+    "require": {
+        "php": "^7.1.0|^8.0",
+        "firebase/php-jwt": "^6.4",
+        "mailchimp/transactional": "*",
+        "phpoffice/phpspreadsheet": "^1.27"
+    },
+    "license": "GPL",
+    "autoload": {
+        "psr-4": {
+            "Franciscogomezlopez\\TioSanFinancieroBackend\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "FRANCISCO GOMEZ LOPEZ",
+            "email": "gerenciait@fvf.com.ve"
+        }
+    ]
+}

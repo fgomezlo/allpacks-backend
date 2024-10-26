@@ -2,7 +2,7 @@
 
 $CONFIG = array();
 
-$CONFIG['env'] = "test"; // prd : for pruction , test: for testing
+$CONFIG['env'] = "prd"; // prd : for pruction , test: for testing
 
 $CONFIG['database'] = [
     "test" => [
@@ -12,10 +12,10 @@ $CONFIG['database'] = [
         "password" => "root"
     ],
     "prd" => [
-        "hostname" => "10.0.0.20",
-        "schema" => "fvf_inventario",
-        "username" => "wilman",
-        "password" => "ww050609*"
+        "hostname" => "localhost",
+        "schema" => "syncstephy",
+        "username" => "syncstephyuser",
+        "password" => "SyncStephy2019"
     ]
 ];
 

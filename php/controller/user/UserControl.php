@@ -39,38 +39,24 @@ class UserControl {
         return $consulta != null ? $consulta[0] : null;
     }
 
-    public function saveUser($params) {
+    public function saveUser($params, $userupdate) {
 
         $obj = new User();
 
         $update = false;
-        if (isset($params["mid"]) && $params["mid"] > 0) {
-            $obj = $this->getUserById($params["mid"]);
+        if ($userupdate != null) {
+            $obj = $userupdate;
             $update = true;
-        } else if (isset($params["email"]) && $params["email"] != "") {
-            $filter = [
-                "email" => $params['email']
-            ];
-            
-            $response = $this->getALLUsers($filter);
-            if($response != null) {
-                return $response[0];
-            }
-
-        }
-
-        if ($obj == null) { // beacuse mid for web use only
-            // object not found
-            $obj = new User();
-            $obj->setEstatus($GLOBALS["config"]["status"]["error"]["swal"]);
-            $obj->setMessage("El usuario no existe");
-            return $obj;
-            
-        }
+        } 
 
         $obj->setEmail($params["email"]);
         $obj->setEstatus(isset($params["status"]) ? $GLOBALS["config"]["status"][$params["status"]]["db"] : $GLOBALS["config"]["status"]["disable"]["db"] );
         $obj->setDes(isset($params["name"]) ? $params["name"] : null);
+        $obj->setDni(isset($params["loguser"]) ? $params["loguser"] : null);
+        
+        if(isset($params["password"])) {
+            $obj->setPassword(md5($params["password"]));
+        }
         
         /* signup functionality to validate user
          * if($params["status"] == "signup") {
@@ -83,8 +69,9 @@ class UserControl {
 
         if ($obj->getId() > 0) {
 
-            $cMail = new MailControl();
+            /*$cMail = new MailControl();
             $cMail->sendActivationMessage($obj, $obj->getToken());
+            */
             
             $obj->setEstatus($GLOBALS["config"]["status"]["active"]["swal"]);
             $obj->setMessage("El usuario '" . $obj->getDes() . "' fue "
@@ -111,11 +98,22 @@ class UserControl {
         if($consulta == null || count($consulta) == 0) 
             return $consulta;
         
+        $consulta = $this->addRolesToUserObj($consulta, $filter);
+        
+        return $consulta;
+    }
+    
+    public function addRolesToUserObj($userarray, $filter) {
+        
+        if($userarray == null) {
+            return $userarray;
+        }
+        
         if(isset($filter["getroles"]) && $filter["getroles"]) {
             
-            for($i = 0; $i < count($consulta); $i++) {
+            for($i = 0; $i < count($userarray); $i++) {
                 
-                $usertmp = $consulta[$i];
+                $usertmp = $userarray[$i];
                 $filterRol = [
                     "rolbyuserid" => $usertmp->getId()
                 ];
@@ -124,13 +122,13 @@ class UserControl {
                         $this->getDaoRol()->getAllObjs($filterRol)
                         );
                 
-                $consulta[$i] = $usertmp;
+                $userarray[$i] = $usertmp;
                 
             }
             
         }
         
-        return $consulta;
+        return $userarray;
     }
 
     /**
@@ -140,31 +138,33 @@ class UserControl {
      * @param int $page what page try to show
      * @return array ["total"=><int> , "data"=><array>objects]
      */
-    public function getALLUsersPagination($filter = null, $show = 50, $page = 1) {
+    public function getALLUsersPagination($filter = null, $show = 50, $offset = 0) {
 
         $conditional = [];
         if ($filter != null) {
             $conditional = $filter;
         }
         $conditional["show"] = $show;
-        $conditional["page"] = ($page - 1) * $show;
+        $conditional["offset"] = $offset;
 
+        $items = $this->getDao()->getAllObjs($conditional);
+        $data = $this->addRolesToUserObj($items, $filter);
+        
         $consulta = [
             "total" => $this->getDao()->getAllObjsCount($conditional),
-            "data" => $this->getDao()->getAllObjs($conditional)
+            "data" => $data
         ];
 
         return $consulta;
     }
 
-    public function delUser($id, $parentuser = "") {
+    public function delUser($obj) {
 
-        $obj = $this->getUserById($id, $parentuser);
         if ($obj != null) {
 
             if ($this->getDao()->delObj($obj) == 1) {
                 $obj->setEstatus($GLOBALS["config"]["status"]["active"]["swal"]);
-                $obj->setMessage("El usuario '" . $obj->getEmail() . "' ha sido eliminada exitosamente");
+                $obj->setMessage("El usuario '" . $obj->getEmail() . "' ha sido eliminado exitosamente");
             } else {
                 $obj->setEstatus($GLOBALS["config"]["status"]["error"]["swal"]);
                 $obj->setMessage("Hubo un problema al eliminar el usuario de la base de datos");
@@ -198,7 +198,7 @@ class UserControl {
     [type] => admin
     [email] => franciscojgomezl@gmail.com
     [dni] => */
-            
+  
             $obj = (array)$obj;
             $filter = ["email" => $obj["email"], "limit" => 1];
             $l = $this->getALLUsers($filter);
@@ -234,7 +234,52 @@ class UserControl {
         return $this->getDao()->saveObj($user);
     }
     
+    public function saveUserRol(User $user, $roles) {
+        
+        $lstRoles = $user->getLstRoles();
+        $userrolesid = [];
+        $userroles = [];
+        
+        $delRoles = [];
+        if($lstRoles != null) {
+            foreach ($lstRoles as $oldRol) {
+                if(array_search($oldRol->getId(), $roles) === false) {
+                    $delRoles[] = $oldRol;
+                } else {
+                    $userrolesid[] = $oldRol->getId();
+                }
+            }
+        }
+        
+        // deleting rol doesnt need anymore
+        foreach ($delRoles as $delRol) {
+            $this->getDao()->deleteRolToUser($user->getId(), $delRol);
+        }
+        
+        // insert rol to user
+        
+        foreach ($roles as $idRol) {
+            
+            $rol = new Rol();
+            $rol->setId($idRol);
+            $userroles[] = $rol;
+            
+            // check if rol already exists
+            if(array_search($idRol, $userrolesid) === false){
+                $this->getDao()->addRolToUser($user->getId(), $rol);
+            }
+        }
+        
+        // update roles list for user updated
+        $user->setLstRoles($userroles);
+        
+        return $user;
+    }
     
+    
+    public function getRoles() {
+        return $this->getDaoRol()->getAllObjs();
+    }
 }
 
 ?>

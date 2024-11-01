@@ -75,6 +75,11 @@ class UserDAOImpl extends mysql {
         
         $id = $obj->getId();
         
+        $query = "delete from `allpack_rol_has_usuario` where id_usuario = ? ";
+        $stmt = $this->createPreparedStatement($query);
+        mysqli_stmt_bind_param($stmt, "i", $id);
+        $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
+        
         $query = "delete from `allpack_usuario` where id_usuario = ? ";
         $stmt = $this->createPreparedStatement($query);
         mysqli_stmt_bind_param($stmt, "i", $id);
@@ -138,15 +143,15 @@ class UserDAOImpl extends mysql {
                 . "ORDER BY `allpack_usuario`.nombre_usuario";
 
         // conditional to paginateion 
-        if ($filter != null && isset($filter["show"]) && isset($filter["page"])) {
-            $query .= " LIMIT " . $filter["page"] . "," . $filter["show"];
+        if ($filter != null && isset($filter["show"]) && isset($filter["offset"])) {
+            $query .= " LIMIT " . $filter["offset"] . "," . $filter["show"];
         }
 
         //check if filter contains limit of products to show
         if ($filter != null && isset($filter["limit"])) {
             $query .= " LIMIT " . $filter["limit"] . " ";
         }
-
+        
         $result = $this->executeQuery($query);
 
         if ($result == null) { return null ; }
@@ -177,6 +182,34 @@ class UserDAOImpl extends mysql {
         }
 
         return NULL;
+    }
+    
+    public function addRolToUser($userid, Rol $rol) {
+        
+        $idRol = $rol->getId();
+        $idUser = $userid;
+        
+        $query = "insert into `allpack_rol_has_usuario` (id_rol, id_usuario) values (? , ?) ";
+        $stmt = $this->createPreparedStatement($query);
+        mysqli_stmt_bind_param($stmt, "ii", $idRol, $idUser);
+        $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
+        
+        return 1;
+        
+    }
+    
+    public function deleteRolToUser($userid, Rol $rol) {
+        
+        $idRol = $rol->getId();
+        $idUser = $userid;
+        
+        $query = "delete from `allpack_rol_has_usuario` where id_rol = ? and id_usuario = ? ";
+        $stmt = $this->createPreparedStatement($query);
+        mysqli_stmt_bind_param($stmt, "ii", $idRol, $idUser);
+        $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
+        
+        return 1;
+        
     }
 
 }

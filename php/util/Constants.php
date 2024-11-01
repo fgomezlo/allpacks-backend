@@ -21,11 +21,11 @@ $CONFIG['database'] = [
 
 $CONFIG['status'] = [
     "active" => [
-        "db" => "active",
+        "db" => "1",
         "swal" => "success"
         ],
-    "disable" => [
-        "db" => "disable",
+    "disabled" => [
+        "db" => "0",
         "swal" => "success"
     ],
     "error" => [
@@ -43,16 +43,32 @@ $CONFIG["jwt.prd"] = "@11p@ck5fc2024";
 $CONFIG["jwt.test"] = "te5t#@g24";
 
 /* PHP Mailer CONFIG */
-$CONFIG["mail.smtp.server"] = "smtp-relay.brevo.com";
-$CONFIG["mail.smtp.port"] = 587;
-$CONFIG["mail.smtp.login"] = "webmaster@allpacksfc.com";
-$CONFIG["mail.smtp.pass"] = "tf7g5Y0M1W4OFb8n";
-$CONFIG["mail.noreply"] = "noreplay@allpacksfc.com";
-$CONFIG["mail.noreply.name"] = "No reply Allpacksfc";
-$CONFIG["mail.baseref"] = "http://localhost:4200/#";
+$CONFIG["mail"] = [
+    "test" => [
+        "smtp.server" => "smtp-relay.brevo.com",
+        "smtp.port" => 587,
+        "smtp.login" => "webmaster@allpacksfc.com",
+        "smtp.pass" => "tf7g5Y0M1W4OFb8n",
+        "noreply" => "noreply@allpacksfc.com",
+        "noreply.name" => "No reply Allpacksfc Testing",
+        "baseref" => "http://localhost:4200/#"
+    ],
+    "prd" => [
+        "smtp.server" => "smtp-relay.brevo.com",
+        "smtp.port" => 587,
+        "smtp.login" => "webmaster@allpacksfc.com",
+        "smtp.pass" => "tf7g5Y0M1W4OFb8n",
+        "noreply" => "noreply@allpacksfc.com",
+        "noreply.name" => "No reply Allpacksfc",
+        "baseref" => "https://www.allpacksfc.com/admin-coreui/#"
+    ]
+];
 
 // RECAPTCHA v2 Google
 $CONFIG["recaptcha.secret-server"] = "6Ldx-18UAAAAAB0v7HgfRsm9yIafwZzjV-GB2UJN";
+
+/* Pagination parameters*/
+$CONFIG["limit"] = 10;
 
 $GLOBALS["config"] = $CONFIG;
 ?>

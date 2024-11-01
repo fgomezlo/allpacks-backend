@@ -12,8 +12,10 @@ use PHPMailer\PHPMailer\Exception;
 class AuthMailControl {
 
     //put your code here
+    
 
     public function sendRecoveryPass(User $user, $link) {
+        $env = $GLOBALS['config']['env'];
         $mail = new PHPMailer(true);
 
         $mail->isSMTP();
@@ -23,18 +25,18 @@ class AuthMailControl {
 //SMTP::DEBUG_SERVER = client and server messages
         $mail->SMTPDebug = SMTP::DEBUG_OFF;
 //Set the hostname of the mail server
-        $mail->Host = $GLOBALS["config"]["mail.smtp.server"];
+        $mail->Host = $GLOBALS["config"]["mail"][$env]["smtp.server"];
 
 //Set the SMTP port number - likely to be 25, 465 or 587
-        $mail->Port = $GLOBALS["config"]["mail.smtp.port"];
+        $mail->Port = $GLOBALS["config"]["mail"][$env]["smtp.port"];
 //Whether to use SMTP authentication
         $mail->SMTPAuth = true;
 //Username to use for SMTP authentication
-        $mail->Username = $GLOBALS["config"]["mail.smtp.login"];
+        $mail->Username = $GLOBALS["config"]["mail"][$env]["smtp.login"];
 //Password to use for SMTP authentication
-        $mail->Password = $GLOBALS["config"]["mail.smtp.pass"];
+        $mail->Password = $GLOBALS["config"]["mail"][$env]["smtp.pass"];
 //Set who the message is to be sent from
-        $mail->setFrom($GLOBALS["config"]["mail.noreply"], $GLOBALS["config"]["mail.noreply.name"]);
+        $mail->setFrom($GLOBALS["config"]["mail"][$env]["noreply"], $GLOBALS["config"]["mail"][$env]["noreply.name"]);
 //Set an alternative reply-to address
 //$mail->addReplyTo('replyto@example.com', 'First Last');
 //Set who the message is to be sent to
@@ -48,7 +50,7 @@ class AuthMailControl {
                 ["{{URL_ACTIVATE}}", 
                     "{{CURRENT_YEAR}}",
                     "{{BRAND_LOGO}}"], 
-                [$GLOBALS["config"]["mail.baseref"] . "/passrecovery/" . $link, 
+                [$GLOBALS["config"]["mail"][$env]["baseref"] . "/passrecovery/" . $link, 
                     date('Y'),
                     "https://www.allpacksfc.com/wp-content/uploads/2019/08/LOGO--1024x466.png"], 
                 file_get_contents(__DIR__ . "/html/passrecovery.html"));
@@ -76,7 +78,12 @@ class AuthMailControl {
         * 
         */
         
-        return $mail->send();
+        try {
+            return $mail->send();
+        } catch (Exception $e) {
+            error_log(print_r($mail, true));
+        }
+        return false;
     }
 
 }

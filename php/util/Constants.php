@@ -42,21 +42,17 @@ $CONFIG['status'] = [
 $CONFIG["jwt.prd"] = "@11p@ck5fc2024";
 $CONFIG["jwt.test"] = "te5t#@g24";
 
-/* MAILCHIMP-MANDRILL CONFIG */
-$CONFIG["mandrill.apikey"] = "md-pDP4RfnppJxKRbwp1QDZiA";
+/* PHP Mailer CONFIG */
+$CONFIG["mail.smtp.server"] = "smtp-relay.brevo.com";
+$CONFIG["mail.smtp.port"] = 587;
+$CONFIG["mail.smtp.login"] = "webmaster@allpacksfc.com";
+$CONFIG["mail.smtp.pass"] = "tf7g5Y0M1W4OFb8n";
+$CONFIG["mail.noreply"] = "noreplay@allpacksfc.com";
+$CONFIG["mail.noreply.name"] = "No reply Allpacksfc";
+$CONFIG["mail.baseref"] = "http://localhost:4200/#";
 
-/*$CONFIG["mandrill.template.welcome"] = "mercatech-welcome-message";
-$CONFIG["mandrill.template.resetpass"] = "mercatech-reset-password";
-$CONFIG["mandrill.template.newclientalert"] = "mercatech-new-client-alert";
-$CONFIG["mandrill.template.publicmail"] = "mercatech-public-website";
-*/
-$CONFIG["mandrill.template.activate"] = "tio-san-activate-account";
-$CONFIG["mandrill.activateurl"] = "http://localhost:4200/#/activate";
-
-//Emails
-$CONFIG["email.newclientalert"] = "mercatech2019@gmail.com";
-$CONFIG["email.newclientalert2"] = "info@mercatech.net";
-
+// RECAPTCHA v2 Google
+$CONFIG["recaptcha.secret-server"] = "6Ldx-18UAAAAAB0v7HgfRsm9yIafwZzjV-GB2UJN";
 
 $GLOBALS["config"] = $CONFIG;
 ?>

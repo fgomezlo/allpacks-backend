@@ -5,7 +5,7 @@ class UserDAOImpl extends mysql {
     private $_COLUMNS = " allpack_usuario.id_usuario, "
             . "allpack_usuario.pass_usuario, allpack_usuario.log_usuario, "
             . "allpack_usuario.activo_usuario, allpack_usuario.mail_usuario, "
-            . "allpack_usuario.nombre_usuario ";
+            . "allpack_usuario.nombre_usuario, allpack_usuario.token_reset ";
 
     private function createObj($value) {
 
@@ -16,6 +16,8 @@ class UserDAOImpl extends mysql {
         $obj->setEstatus($value["activo_usuario"]);
         $obj->setId($value["id_usuario"]);
         $obj->setDni($value["log_usuario"]);
+        $obj->setTokenReset($value["token_reset"]);
+        
         // $obj->setToken($value["token"]);
         
         return $obj;
@@ -34,6 +36,7 @@ class UserDAOImpl extends mysql {
         $pass_usuario = $obj->getPassword();
         $mail_usuario = $obj->getEmail();
         $activo_usuario = $obj->getEstatus();
+        $token_reset = $obj->getTokenReset();
         
         if ($id_usuario > 0) {
 
@@ -41,13 +44,13 @@ class UserDAOImpl extends mysql {
             $query = "UPDATE `allpack_usuario` "
                     . "SET `nombre_usuario` =  ?, "
                     . "`log_usuario` =  ?, `pass_usuario` = ?, `mail_usuario` =  ?, "
-                    . "`activo_usuario` =  ? "
+                    . "`activo_usuario` =  ?, token_reset = ? "
                     . "WHERE id_usuario = ?";
 
             $stmt = $this->createPreparedStatement($query);
 
-            mysqli_stmt_bind_param($stmt, "ssssii", $nombre_usuario, $log_usuario, 
-                    $pass_usuario, $mail_usuario, $activo_usuario, $id_usuario);
+            mysqli_stmt_bind_param($stmt, "ssssisi", $nombre_usuario, $log_usuario, 
+                    $pass_usuario, $mail_usuario, $activo_usuario, $token_reset, $id_usuario);
 
             $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
         } else {
@@ -114,6 +117,11 @@ class UserDAOImpl extends mysql {
 
         if (isset($arrayfilter["like"]) && $arrayfilter["like"] != null) {
             $filter .= ( $where ? " AND " : " WHERE " ) . " `allpack_usuario`.nombre_usuario like '%" . $arrayfilter["like"] . "%'";
+            $where = true;
+        }
+        
+        if (isset($arrayfilter["tokenreset"]) && $arrayfilter["tokenreset"] != null) {
+            $filter .= ( $where ? " AND " : " WHERE " ) . " `allpack_usuario`.token_reset like '" . $arrayfilter["tokenreset"] . "'";
             $where = true;
         }
 

@@ -216,6 +216,25 @@ class UserControl {
         return $user;
     }
     
+    public function generateResetPasswordToken(User $user){
+        
+        $tokenActivate = md5($user->getId().date('Ymdhis'));
+        $user->setTokenReset($tokenActivate);
+        $this->getDao()->saveObj($user);   
+        
+        return $tokenActivate;
+    }
+    
+    public function resetPassword(User $user, $password){
+        
+        $md5sumPass = md5($password);
+        $user->setPassword($md5sumPass);
+        $user->setTokenReset(null);
+        
+        return $this->getDao()->saveObj($user);
+    }
+    
+    
 }
 
 ?>

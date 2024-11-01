@@ -6,8 +6,17 @@ class User extends Combo {
     private $password;
     private $dni;
     private $token;
+    private $tokenReset;
     
     private $lstRoles;
+    
+    function getTokenReset() {
+        return $this->tokenReset;
+    }
+
+    function setTokenReset($tokenReset) {
+        $this->tokenReset = $tokenReset;
+    }
     
     function addRol($rol) {
         if($this->lstRoles == null) {

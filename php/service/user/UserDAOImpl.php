@@ -74,18 +74,21 @@ class UserDAOImpl extends mysql {
         
         
         $id = $obj->getId();
+        try {
+            $query = "delete from `allpack_rol_has_usuario` where id_usuario = ? ";
+            $stmt = $this->createPreparedStatement($query);
+            mysqli_stmt_bind_param($stmt, "i", $id);
+            $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
+
+            $query = "delete from `allpack_usuario` where id_usuario = ? ";
+            $stmt = $this->createPreparedStatement($query);
+            mysqli_stmt_bind_param($stmt, "i", $id);
+            $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
+        } catch (Exception $e) {
+            return false;
+        }
         
-        $query = "delete from `allpack_rol_has_usuario` where id_usuario = ? ";
-        $stmt = $this->createPreparedStatement($query);
-        mysqli_stmt_bind_param($stmt, "i", $id);
-        $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
-        
-        $query = "delete from `allpack_usuario` where id_usuario = ? ";
-        $stmt = $this->createPreparedStatement($query);
-        mysqli_stmt_bind_param($stmt, "i", $id);
-        $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
-        
-        return 1;
+        return true;
     }
     
     public function filterAllObj($arrayfilter, $where = false) {
@@ -127,6 +130,15 @@ class UserDAOImpl extends mysql {
         
         if (isset($arrayfilter["tokenreset"]) && $arrayfilter["tokenreset"] != null) {
             $filter .= ( $where ? " AND " : " WHERE " ) . " `allpack_usuario`.token_reset like '" . $arrayfilter["tokenreset"] . "'";
+            $where = true;
+        }
+        
+        if (isset($arrayfilter["filtervalue"]) && $arrayfilter["filtervalue"] != null) {
+            $filter .= ( $where ? " AND " : " WHERE " ) . " ( " . 
+                    "`allpack_usuario`.nombre_usuario like '%" . $arrayfilter["filtervalue"] . "%' ";
+            $filter .= " OR `allpack_usuario`.log_usuario like '%" . $arrayfilter["filtervalue"] . "%' ";
+            $filter .= " OR `allpack_usuario`.mail_usuario like '%" . $arrayfilter["filtervalue"] . "%' ";
+            $filter .= " ) ";
             $where = true;
         }
 

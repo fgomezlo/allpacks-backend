@@ -157,9 +157,9 @@ class Auth extends REST {
         
         $params = [
             "email" => $data["email"],
-            "status" => $data["status"], // active | disabled
+            "status" => $data["status"] == 1 ? "active" : "disabled", // active | disabled
             "name" => $data["name"],
-            "loguser" => $data["loguser"]
+            "loguser" => $data["dni"]
         ];
         
         
@@ -174,11 +174,11 @@ class Auth extends REST {
         }
 
         // check loguser
-        $lst = $uControl->getALLUsers(["loguser" => $data["loguser"]]);
+        $lst = $uControl->getALLUsers(["loguser" => $data["dni"]]);
         if($lst != null && $lst[0]->getId() != $data["id"]) {
             $this->response(json_encode([
             "error" => "500-3",
-            "msg" => "El nombre de usuario: \"". $data["loguser"] . "\" ha sido utilizado en otra cuenta"
+            "msg" => "El nombre de usuario: \"". $data["dni"] . "\" ha sido utilizado en otra cuenta"
                 ]), 403);
             return;
         }

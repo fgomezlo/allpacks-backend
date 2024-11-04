@@ -17,15 +17,19 @@ require_once '../php/domain/user/Rol.php';
 
 
 //Required files 
+require_once '../php/service/consolidacion/ConsolidacionDAOImpl.php';
+require_once '../php/service/consolidacion/ConsolidacionItemDAOImpl.php';
+require_once '../php/controller/consolidacion/ConsolidacionControl.php';
+require_once '../php/domain/consolidacion/Consolidacion.php';
+require_once '../php/domain/consolidacion/ConsolidacionItem.php';
+require_once '../php/service/consolidacion/EstadoDAOImpl.php';
+require_once '../php/domain/customer/Estado.php';
+
+// customer require
 require_once '../php/service/customer/CustomerDAOImpl.php';
-require_once '../php/service/customer/EstadoDAOImpl.php';
-require_once '../php/service/customer/PaisDAOImpl.php';
-require_once '../php/service/customer/DestinoDAOImpl.php';
 require_once '../php/controller/customer/CustomerControl.php';
 require_once '../php/domain/customer/Customer.php';
-require_once '../php/domain/customer/Estado.php';
-require_once '../php/domain/customer/Pais.php';
-require_once '../php/domain/customer/Destino.php';
+
 
 // Mailing notifications
 require_once '../php/controller/mail/AuthMailControl.php';
@@ -74,8 +78,10 @@ class Auth extends REST {
             $this->response(json_encode(["error" => "Usuario no autorizado para esta solicitud"]), 403);
             exit();
         } 
-
-        $data = json_decode(file_get_contents('php://input'), true);
+        
+        $text = file_get_contents('php://input');
+        //error_log($text);
+        $data = json_decode($text, true);
         if ($data == null) {
             $data = $this->_request;
             $tmp = json_decode($data, true);
@@ -120,24 +126,70 @@ class Auth extends REST {
             $limit = $data["limit"];
         }
         
-        $cControl = new CustomerControl();
+        // error_log(print_r($data, true));
+        
+        $cControl = new ConsolidacionControl();
 
         $filter = [
-            "filtervalue" => trim($data["filtervalue"]),
-            "getroles" => true
+            "getitems" => true
         ];
-        $userlst = $cControl->getALLCustomersPagination($filter, $limit, $offset);
-        $useritems = [];
-        if($userlst["data"] != null) {
-            foreach ($userlst["data"] as $value) {
-                //$value = new User();
-                $useritems[] = $value->getJSONobject();
+        
+        // load filter parameters
+        if(isset($data["tiposervicio"]) && $data["tiposervicio"] != null) {
+            $filter["tiposervicio"] = $data["tiposervicio"];
+        }
+        
+        if( isset($data["statusconsolidacion"]) && $data["statusconsolidacion"] != null){
+            
+            $stridsbycoma = "";
+            foreach ($data["statusconsolidacion"] as $status) {
+                $stridsbycoma .=  ($stridsbycoma != "" ? "," : "") . $status["id"];
+            }
+            
+            $filter["status"] = $stridsbycoma;
+        }
+        
+        // check range dates
+        if(isset($data["dpFrom"]) && $data["dpFrom"] != null) {
+            $filter["fromdate"] = $data["dpFrom"]["year"] . "-" . 
+                    $data["dpFrom"]["month"] . "-" . $data["dpFrom"]["day"];
+        }
+        
+        if(isset($data["dpTo"]) && $data["dpTo"] != null) {
+            $filter["todate"] = $data["dpTo"]["year"] . "-" . 
+                    $data["dpTo"]["month"] . "-" . $data["dpTo"]["day"];
+        }
+        
+        if(isset($data["filtervalue"]) && $data["filtervalue"] != null) {
+            $filter["filtervalue"] = $data["filtervalue"];
+        }
+        
+        $objlst = $cControl->getALLConsolidacionPagination($filter, $limit, $offset);
+        $objitems = [];
+        if($objlst["data"] != null) {
+            
+            $uControl = new UserControl();
+            $cusControl = new CustomerControl();
+            
+            foreach ($objlst["data"] as $value) {
+                //$value = new Consolidacion();
+                
+                // Customer full object
+                if($value->getIdcliente() != null ) {
+                    $value->setIdcliente($cusControl->getCustomerById($value->getIdcliente()));
+                }
+                
+                if($value->getIdusuario() != null ) {
+                    $value->setIdusuario($uControl->getUserById($value->getIdusuario()));
+                }
+                
+                $objitems[] = $value->getJSONobject();
             }
         } 
         
         $arrayResponse = [
-            "totalitems" => $userlst["total"],
-            "items" => $useritems,
+            "totalitems" => $objlst["total"],
+            "items" => $objitems,
             "offset" => $offset,
             "limit" => $limit,
         ];
@@ -145,7 +197,7 @@ class Auth extends REST {
         $this->response(json_encode($arrayResponse), 200);
     }
     
-    public function savecustomer($data) {
+    public function saveinstruccion($data) {
         
         $isupdate = isset($data["id"]) && $data["id"] > 0;
 
@@ -218,74 +270,104 @@ class Auth extends REST {
         
         $this->response(json_encode($arrayResponse), 200);
     }
-    
-    public function paislist($data) {
-        
-        $cControl = new CustomerControl();
-        $lst = $cControl->getPaises();
-        $lstobj = [];
-        if($lst != null) {
-            foreach ($lst as $value) {
-                $lstobj[] = $value->getJSONobject();
-            }
-        }
-         
-        $arrayResponse = [
-            "totalitems" => count($lstobj),
-            "items" => $lstobj,
-        ];
-        
-        $this->response(json_encode($arrayResponse), 200);
-        
-    }
-    
-    public function destinolist($data) {
-        
-        $cControl = new CustomerControl();
-        $lst = $cControl->getDestinos();
-        $lstobj = [];
-        if($lst != null) {
-            foreach ($lst as $value) {
-                $lstobj[] = $value->getJSONobject();
-            }
-        }
-         
-        $arrayResponse = [
-            "totalitems" => count($lstobj),
-            "items" => $lstobj,
-        ];
-        
-        $this->response(json_encode($arrayResponse), 200);
-        
-    }
 
-    public function delcustomer($data) {
+    public function delconsolidacion($data) {
         
         if(!isset($data["id"]) || !$data["id"] > 0) {
             $this->response(json_encode([
-                "error" => "521-1",
-                "msg" => "Falta id de cliente para eliminar en base de datos"
+                "error" => "709-1",
+                "msg" => "Falta id de consolidacion para eliminar en base de datos"
                     ]), 403);
                 return;
         }
         
-        $cControl = new CustomerControl();
-        $customerdel = $cControl->getCustomerById($data["id"]);
-        if($customerdel == null) {
+        $cControl = new ConsolidacionControl();
+        $lstconsolidacion = $cControl->getALLConsolidacion(["id" => $data["id"]] );
+        if($lstconsolidacion == null) {
             $this->response(json_encode([
-                "error" => "521-2",
-                "msg" => "Cliente no existe en la base de datos"
+                "error" => "709-2",
+                "msg" => "La consolidacion no existe en la base de datos"
                     ]), 403);
                 return;
         }
         
-        $response = $cControl->delCustomer($customerdel);
+        $customerdel = $lstconsolidacion[0];
+        $response = $cControl->delConsolidacion($customerdel);
         
         $arrayResponse = [
             "code" => $response->getEstatus(),
             "message" => $response->getMessage(),
             "data" => $customerdel->getJSONobject()
         ];
+        $this->response(json_encode($arrayResponse), 200);
+        
+    }
+    
+    public function changestatusconsolidacion($data) {
+        
+        if(!isset($data["id"]) || !$data["id"] > 0) {
+            $this->response(json_encode([
+                "error" => "710-1",
+                "msg" => "Falta id de consolidacion para actualizar estatus"
+                    ]), 403);
+                return;
+        }
+        
+        if(!isset($data["status"]) || !$data["status"] > 0) {
+            $this->response(json_encode([
+                "error" => "710-2",
+                "msg" => "Falta status para actualizar la consolidacion"
+                    ]), 403);
+                return;
+        }
+        
+        $cControl = new ConsolidacionControl();
+        $lstconsolidacion = $cControl->getALLConsolidacion(["id" => $data["id"]] );
+        if($lstconsolidacion == null) {
+            $this->response(json_encode([
+                "error" => "710-3",
+                "msg" => "La consolidacion no existe en la base de datos"
+                    ]), 403);
+                return;
+        }
+        //$consolidacionupdated = new Consolidacion();
+        $consolidacionupdated = $lstconsolidacion[0];
+        $params = [
+            "status" => $data["status"],
+            "nota" => $consolidacionupdated->getNota(),
+            "observacion" => $consolidacionupdated->getObservacion(),
+            "tiposervicio" => $consolidacionupdated->getTipoServicio(),
+            "cliente" => [ "id" => $consolidacionupdated->getIdcliente()],
+            "usuario" => ["id" => $this->currentUser->getId() ]
+        ];
+        
+        $response = $cControl->saveConsolidacion($params, $consolidacionupdated);
+        
+        $arrayResponse = [
+            "code" => $response->getEstatus(),
+            "message" => $response->getMessage(),
+            "data" => $consolidacionupdated->getJSONobject()
+        ];
+        $this->response(json_encode($arrayResponse), 200);
+        
+    }
+    
+    public function estadolist($data) {
+        
+        $cControl = new ConsolidacionControl();
+        $lst = $cControl->getEstados();
+        $lstobj = [];
+        if($lst != null) {
+            foreach ($lst as $value) {
+                $lstobj[] = $value->getJSONobject();
+            }
+        }
+         
+        $arrayResponse = [
+            "totalitems" => count($lstobj),
+            "items" => $lstobj,
+        ];
+        
         $this->response(json_encode($arrayResponse), 200);
         
     }

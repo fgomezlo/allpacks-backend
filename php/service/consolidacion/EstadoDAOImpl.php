@@ -2,8 +2,8 @@
 
 class EstadoDAOImpl extends mysql {
 
-    private $_COLUMNS = " `allpack_estado`.`id_estado`,
-    `allpack_estado`.`nombre_estado` ";
+    private $_COLUMNS = " `allpack_estado_consolidacion`.`id_estado`,
+    `allpack_estado_consolidacion`.`nombre_estado` ";
 
     private function createObj($value) {
 
@@ -29,7 +29,7 @@ class EstadoDAOImpl extends mysql {
         if ($id_estado > 0) {
 
             //update object
-            $query = "UPDATE `allpack_estado` "
+            $query = "UPDATE `allpack_estado_consolidacion` "
                     . "SET `nombre_estado` = ?"
                     . "WHERE `id_estado` = ?";
 
@@ -41,7 +41,7 @@ class EstadoDAOImpl extends mysql {
         } else {
 
             //new object
-            $query = "INSERT INTO `allpack_estado` (`nombre_estado`) "
+            $query = "INSERT INTO `allpack_estado_consolidacion` (`nombre_estado`) "
                     . "VALUES (?) ";
             
             $stmt = $this->createPreparedStatement($query);
@@ -58,7 +58,7 @@ class EstadoDAOImpl extends mysql {
         
         $id = $obj->getId();
         
-        $query = "delete from `allpack_estado` where id_estado = ? ";
+        $query = "delete from `allpack_estado_consolidacion` where id_estado = ? ";
         $stmt = $this->createPreparedStatement($query);
         mysqli_stmt_bind_param($stmt, "i", $id);
         $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
@@ -74,7 +74,7 @@ class EstadoDAOImpl extends mysql {
             return $filter;
         
         if (isset($arrayfilter["id"]) && $arrayfilter["id"] != null) {
-            $filter .= ( $where ? " AND " : " WHERE " ) . " `allpack_estado`.id_estado in (" . $arrayfilter["id"] . ")";
+            $filter .= ( $where ? " AND " : " WHERE " ) . " `allpack_estado_consolidacion`.id_estado in (" . $arrayfilter["id"] . ")";
             $where = true;
         }
 
@@ -86,9 +86,9 @@ class EstadoDAOImpl extends mysql {
         $condition = $this->filterAllObj($filter, false);
 
         $query = " SELECT " . $this->_COLUMNS
-                . " FROM `allpack_estado` "
+                . " FROM `allpack_estado_consolidacion` "
                 . $condition 
-                . "ORDER BY `allpack_estado`.nombre_estado";
+                . "ORDER BY `allpack_estado_consolidacion`.nombre_estado";
 
         // conditional to paginateion 
         if ($filter != null && isset($filter["show"]) && isset($filter["page"])) {
@@ -120,8 +120,8 @@ class EstadoDAOImpl extends mysql {
         $condition = $this->filterAllObj($filter);
 
         $query = " SELECT COUNT(*) AS total "
-                . " FROM `allpack_estado` $condition "
-                . "ORDER BY `allpack_estado`.nombre_estado";
+                . " FROM `allpack_estado_consolidacion` $condition "
+                . "ORDER BY `allpack_estado_consolidacion`.nombre_estado";
 
         $result = $this->executeQuery($query);
 

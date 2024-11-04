@@ -18,6 +18,10 @@ class ConsolidacionControl {
         return $this->dao;
     }
     
+    /**
+     * 
+     * @return ConsolidacionItemDAOImpl
+     */
     private function getDaoItem() {
         if ($this->daoItem == null) {
             $this->daoItem = new ConsolidacionItemDAOImpl();
@@ -72,7 +76,46 @@ class ConsolidacionControl {
 
         return $obj;
     }
+    
+    public function saveTrackingInfo($packages, Consolidacion $objupdate) {
+        
+//        $obj = new Consolidacion();
+        $obj = $objupdate;
+        
+        $error = false;
+        $updatedPackages = [];
+        foreach ($packages as $package) {
+            
+            $dbPackage = $this->getDaoItem()->getAllObjs(["id"=>$package["id"]]);
+            if($dbPackage == null) {
+                $error = true;
+                break;
+            }
+            
+            $tmp = $dbPackage[0];
+            $tmp->setNota(isset($package["nota"]) && trim($package["nota"]) != "" ? trim($package["nota"]) : null);
+            $tmp->setWarehouse(isset($package["warehouse"]) && trim($package["warehouse"]) != "" ? trim($package["warehouse"]) : null);
+            
+            $this->getDaoItem()->saveObj($tmp);
+            $updatedPackages[] = $tmp;
+        }
 
+        if (!$error) {
+
+            $obj->setLstItems($updatedPackages);
+            
+            $obj->setEstatus($GLOBALS["config"]["status"]["active"]["swal"]);
+            $obj->setMessage("Informacion de tracking '" . $obj->getId() . 
+                    "' fue actualizada exitosamente");
+        } else {
+            // problemas de bd
+            $obj->setEstatus($GLOBALS["config"]["status"]["error"]["swal"]);
+            $obj->setMessage("Hubo un problema al actualizar la informacion de los paquetes");
+        }
+
+        return $obj;
+        
+    }
     /**
      * Get all users by filters
      * @param array $filter

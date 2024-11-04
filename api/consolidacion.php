@@ -114,6 +114,65 @@ class Auth extends REST {
         return true;
     }
 
+    
+    public function tracking($data) {
+        $offset = 0;
+        if(isset($data["offset"])) {
+            $offset = $data["offset"];
+        }
+        
+        $limit = $GLOBALS["config"]["limit"];
+        if(isset($data["limit"])) {
+            $limit = $data["limit"];
+        }
+        
+        // error_log(print_r($data, true));
+        
+        $cControl = new ConsolidacionControl();
+
+        $filter = [
+            "getitems" => true,
+            "status" => "1, 2" // pendiente y en proceso
+        ];
+        
+        if(isset($data["filtervalue"]) && $data["filtervalue"] != null) {
+            $filter["tracking"] = $data["filtervalue"];
+        }
+        
+        $objlst = $cControl->getALLConsolidacionPagination($filter, $limit, $offset);
+        $objitems = [];
+        if($objlst["data"] != null) {
+            
+            $uControl = new UserControl();
+            $cusControl = new CustomerControl();
+            
+            foreach ($objlst["data"] as $value) {
+                //$value = new Consolidacion();
+                
+                // Customer full object
+                if($value->getIdcliente() != null ) {
+                    $value->setIdcliente($cusControl->getCustomerById($value->getIdcliente()));
+                }
+                
+                if($value->getIdusuario() != null ) {
+                    $value->setIdusuario($uControl->getUserById($value->getIdusuario()));
+                }
+                
+                $objitems[] = $value->getJSONobject();
+            }
+        } 
+        
+        $arrayResponse = [
+            "totalitems" => $objlst["total"],
+            "items" => $objitems,
+            "offset" => $offset,
+            "limit" => $limit,
+        ];
+
+        $this->response(json_encode($arrayResponse), 200);
+        
+    }
+    
     public function search($data) {
         
         $offset = 0;
@@ -351,6 +410,49 @@ class Auth extends REST {
         $this->response(json_encode($arrayResponse), 200);
         
     }
+    
+    public function savetracking($data) {
+        
+        if(!isset($data["id"]) || !$data["id"] > 0) {
+            $this->response(json_encode([
+                "error" => "711-1",
+                "msg" => "Falta id de consolidacion para actualizar estatus"
+                    ]), 403);
+                return;
+        }
+        
+        if(!isset($data["paquetes"]) || !$data["paquetes"] > 0) {
+            $this->response(json_encode([
+                "error" => "711-2",
+                "msg" => "Falta paquetes ha actualizar"
+                    ]), 403);
+                return;
+        }
+        
+        $cControl = new ConsolidacionControl();
+        $lstconsolidacion = $cControl->getALLConsolidacion(["id" => $data["id"]] );
+        if($lstconsolidacion == null) {
+            $this->response(json_encode([
+                "error" => "711-3",
+                "msg" => "La consolidacion no existe en la base de datos"
+                    ]), 403);
+                return;
+        }
+        
+        
+        //$consolidacionupdated = new Consolidacion();
+        $consolidacionupdated = $lstconsolidacion[0];
+        $response = $cControl->saveTrackingInfo($data["paquetes"], $consolidacionupdated);
+        
+        $arrayResponse = [
+            "code" => $response->getEstatus(),
+            "message" => $response->getMessage(),
+            "data" => $consolidacionupdated->getJSONobject()
+        ];
+        $this->response(json_encode($arrayResponse), 200);
+        
+    }
+    
     
     public function estadolist($data) {
         

@@ -21,6 +21,7 @@ class ConsolidacionItemDAOImpl extends mysql {
         $obj->setNota($value["nota"]);
         $obj->setValor($value["valor_consolidar"]);
         $obj->setUrlfactura($value["url_factura"]);
+        $obj->setIdconsolidacion($value["id_consolidar"]);
 
         return $obj;
     }

@@ -176,6 +176,20 @@ class ConsolidacionDAOImpl extends mysql {
             $filter .= " ) ";
             $where = true;
         }
+        
+        if (isset($arrayfilter["tracking"]) && $arrayfilter["tracking"] != null) {
+            $filter .= ( $where ? " AND " : " WHERE " ) . " ( " 
+                    . "EXISTS (select * from `allpack_cliente` "
+                    . "WHERE `allpack_cliente`.codigo_cliente like '" . $arrayfilter["tracking"] . "' "
+                    . "AND `allpack_cliente`.id_cliente = allpack_consolidar.id_cliente ) ";
+            $filter .= " OR "
+                    . "EXISTS (select * "
+                    . "from `allpack_consolidar_item` aci "
+                    . "where aci.tracking_consolidar like '" . $arrayfilter["tracking"] . "' and "
+                    . "`allpack_consolidar`.id_consolidar = aci.id_consolidar ) ";
+            $filter .= " ) ";
+            $where = true;
+        }
 
         return $filter;
     }

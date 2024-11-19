@@ -55,7 +55,11 @@ class ConsolidacionControl {
         $obj->setTipoServicio(isset($params["tiposervicio"]) && $params["tiposervicio"] != ""  ? $params["tiposervicio"] : $GLOBALS['config']['defaultservice'][$env]); // default: aereo
         $obj->setIdcliente(isset($params["cliente"]) && isset($params["cliente"]["id"]) ? $params["cliente"]["id"] : null);
         $obj->setIdusuario(isset($params["usuario"]) && isset($params["usuario"]["id"]) ? $params["usuario"]["id"] : null);
-            
+        
+        if(isset($params["whreempaque"])) {
+            $obj->setWhreempaque($params["whreempaque"]);
+        }
+        
         //error_log(print_r($obj, true));
         $obj = $this->getDao()->saveObj($obj);
 

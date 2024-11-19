@@ -7,6 +7,7 @@ class Consolidacion extends Combo {
     private $idusuario;
     private $observacion;
     private $tipoServicio;
+    private $whreempaque;
     
     private $lstItems;
     
@@ -25,6 +26,14 @@ class Consolidacion extends Combo {
     function setLstItems($lstItems) {
         $this->lstItems = $lstItems;
     }    
+    
+    function getWhreempaque() {
+        return $this->whreempaque;
+    }
+
+    function setWhreempaque($whreempaque) {
+        $this->whreempaque = $whreempaque;
+    }
     
     function getIdcliente() {
         return $this->idcliente;
@@ -93,7 +102,8 @@ class Consolidacion extends Combo {
             "observacion" => $this->getObservacion(),
             "tiposervicio" => $this->getTipoServicio(),
             "codigo" => $this->getCodConsolidacion(),
-            "datecreated" => $this->getDateCreated()
+            "datecreated" => $this->getDateCreated(),
+            "whreempaque" => $this->getWhreempaque()
         ];
         
         if($this->getIdcliente() != null) {

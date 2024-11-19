@@ -400,6 +400,10 @@ class Auth extends REST {
             "usuario" => ["id" => $this->currentUser->getId() ]
         ];
         
+        if(isset($data["whreempaque"]) && trim($data["whreempaque"]) != "") {
+            $params["whreempaque"] = trim($data["whreempaque"]);
+        }
+        
         $response = $cControl->saveConsolidacion($params, $consolidacionupdated);
         
         $arrayResponse = [

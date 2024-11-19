@@ -8,6 +8,7 @@ class ConsolidacionDAOImpl extends mysql {
             . "date_format(`allpack_consolidar`.`fecha_actualizacion`,'%d/%m/%Y %H:%i') as fecha_actualizacion, "
             . "`allpack_consolidar`.`id_usuario`, `allpack_consolidar`.`observacion`, "
             . "`allpack_consolidar`.`tipo_servicio` ,"
+            . "`allpack_consolidar`.`wh_reempaque` ,"
             . "(select date_format(min(fecha_actualizacion), '%d/%m/%Y %H:%i') "
             . "from allpack_hist_consolidar "
             . "where allpack_hist_consolidar.id_consolidar =  allpack_consolidar.id_consolidar) as fecha_creacion";
@@ -25,6 +26,7 @@ class ConsolidacionDAOImpl extends mysql {
         $obj->setObservacion($value["observacion"]);
         $obj->setTipoServicio($value["tipo_servicio"]);
         $obj->setDateUpdated($value["fecha_actualizacion"]);
+        $obj->setWhreempaque($value["wh_reempaque"]);
         $obj->setDateCreated($value["fecha_creacion"] != null ? $value["fecha_creacion"] : $value["fecha_actualizacion"]);
         
         return $obj;
@@ -44,6 +46,7 @@ class ConsolidacionDAOImpl extends mysql {
          $id_usuario = $obj->getIdusuario();
          $observacion = $obj->getObservacion();
          $tipo_servicio = $obj->getTipoServicio();
+         $wh_reempaque = $obj->getWhreempaque();
         
         if ($id_consolidar > 0) {
             
@@ -54,14 +57,14 @@ class ConsolidacionDAOImpl extends mysql {
             $query = "UPDATE `allpack_consolidar` "
                     . "SET id_cliente = ? , nota_cliente = ?, status_consolidar = ?, "
                     . "fecha_actualizacion = now(), id_usuario = ?, "
-                    . "observacion = ?, tipo_servicio = ? "
+                    . "observacion = ?, tipo_servicio = ? , wh_reempaque = ? "
                     . "WHERE id_consolidar = ?";
 
             $stmt = $this->createPreparedStatement($query);
 
-            mysqli_stmt_bind_param($stmt, "isiisii", $id_cliente, $nota_cliente, 
+            mysqli_stmt_bind_param($stmt, "isiisiii", $id_cliente, $nota_cliente, 
                     $status_consolidar, $id_usuario, $observacion, 
-                    $tipo_servicio, $id_consolidar);
+                    $tipo_servicio, $wh_reempaque, $id_consolidar);
 
             $this->executeUpdateOrDeletePreparedStatement($stmt, $query);
         } else {
@@ -173,6 +176,7 @@ class ConsolidacionDAOImpl extends mysql {
                     . "WHERE `allpack_cliente`.codigo_cliente like '" . $arrayfilter["filtervalue"] . "' "
                     . "AND `allpack_cliente`.id_cliente = allpack_consolidar.id_cliente ) ";
             $filter .= " OR `allpack_consolidar`.id_consolidar = " . $arrayfilter["filtervalue"] . " ";
+            $filter .= " OR `allpack_consolidar`.wh_reempaque = " . $arrayfilter["filtervalue"] . " ";
             $filter .= " ) ";
             $where = true;
         }
@@ -201,7 +205,7 @@ class ConsolidacionDAOImpl extends mysql {
         $query = " SELECT " . $this->_COLUMNS
                 . " FROM `allpack_consolidar` "
                 . $condition 
-                . "ORDER BY `allpack_consolidar`.id_consolidar desc";
+                . " ORDER BY `allpack_consolidar`.id_consolidar desc";
 
         // conditional to paginateion 
         if ($filter != null && isset($filter["show"]) && isset($filter["offset"])) {
@@ -213,7 +217,7 @@ class ConsolidacionDAOImpl extends mysql {
             $query .= " LIMIT " . $filter["limit"] . " ";
         }
         
-        error_log($query);
+        //error_log($query);
         $result = $this->executeQuery($query);
 
         if ($result == null) { return null ; }
@@ -258,7 +262,8 @@ class ConsolidacionDAOImpl extends mysql {
                     nota_cliente,
                     observacion,
                     status_consolidar,
-                    tipo_servicio) "
+                    tipo_servicio,
+                    wh_reempaque) "
                 . "(select fecha_actualizacion,
                     id_cliente,
                     id_consolidar,
@@ -266,7 +271,8 @@ class ConsolidacionDAOImpl extends mysql {
                     nota_cliente,
                     observacion,
                     status_consolidar,
-                    tipo_servicio "
+                    tipo_servicio,
+                    wh_reempaque "
                 . "from allpack_consolidar "
                 . "where id_consolidar = " . $idConsolidar . ")";
 

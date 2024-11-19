@@ -210,6 +210,7 @@ class UserControl {
             if($user->getEstatus() !== $GLOBALS["config"]['status']["active"]["db"]) return false;
             
         } catch (Exception $err) {
+            error_log(print_r($err, true));
             return false;
         }
         

@@ -132,7 +132,7 @@ class Auth extends REST {
 
         $filter = [
             "getitems" => true,
-            "status" => "1, 2" // pendiente y en proceso
+            "status" => "1, 2, 5" // pendiente, en proceso, reempacado
         ];
         
         if(isset($data["filtervalue"]) && $data["filtervalue"] != null) {

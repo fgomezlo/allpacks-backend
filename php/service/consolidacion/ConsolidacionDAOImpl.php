@@ -213,6 +213,7 @@ class ConsolidacionDAOImpl extends mysql {
             $query .= " LIMIT " . $filter["limit"] . " ";
         }
         
+        error_log($query);
         $result = $this->executeQuery($query);
 
         if ($result == null) { return null ; }

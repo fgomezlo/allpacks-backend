@@ -39,7 +39,8 @@ class ConsolidacionControl {
     }
 
     public function saveConsolidacion($params, $objupdate) {
-
+        
+        $env = $GLOBALS["config"]["env"];
         $obj = new Consolidacion();
 
         $update = false;
@@ -51,7 +52,7 @@ class ConsolidacionControl {
         $obj->setEstatus(isset($params["status"]) ? $params["status"] : 1 );
         $obj->setNota(isset($params["nota"]) ? $params["nota"] : null);
         $obj->setObservacion(isset($params["observacion"]) ? $params["observacion"] : null);
-        $obj->setTipoServicio(isset($params["tiposervicio"]) ? $params["tiposervicio"] : null);
+        $obj->setTipoServicio(isset($params["tiposervicio"]) && $params["tiposervicio"] != ""  ? $params["tiposervicio"] : $GLOBALS['config']['defaultservice'][$env]); // default: aereo
         $obj->setIdcliente(isset($params["cliente"]) && isset($params["cliente"]["id"]) ? $params["cliente"]["id"] : null);
         $obj->setIdusuario(isset($params["usuario"]) && isset($params["usuario"]["id"]) ? $params["usuario"]["id"] : null);
             
@@ -98,6 +99,35 @@ class ConsolidacionControl {
             
             $this->getDaoItem()->saveObj($tmp);
             $updatedPackages[] = $tmp;
+        }
+        
+        // change status 
+        $listPackages = $this->getDaoItem()->getAllObjs(["consolidacionid" => $objupdate->getId()]);
+        $foundwarehouse = 0;
+        $newStatus = $GLOBALS["config"]["consolidacionstatus"]["pendiente"];
+        if($listPackages != null) {
+            $itemPackage = new ConsolidacionItem();
+            foreach ($listPackages as $itemPackage) {
+                if($itemPackage->getWarehouse() != "") {
+                    $foundwarehouse++;
+                }
+            }
+            
+            // change current status
+            if($foundwarehouse > 0) {
+                if($foundwarehouse == count($listPackages)) {
+                    //change current status for reempacado
+                    $newStatus = $GLOBALS["config"]["consolidacionstatus"]["reempacado"];                    
+                } else {
+                    // change for proceso
+                    $newStatus = $GLOBALS["config"]["consolidacionstatus"]["proceso"];                    
+                }
+            }
+           
+            if($obj->getEstatus() != $newStatus) {
+                $obj->setEstatus($newStatus);
+                $obj = $this->getDao()->saveObj($obj);
+            }
         }
 
         if (!$error) {

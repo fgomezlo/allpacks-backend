@@ -19,6 +19,19 @@ $CONFIG['database'] = [
     ]
 ];
 
+$CONFIG['defaultservice'] = [
+    "test" => 1,
+    "prd" => 1
+];
+
+$CONFIG['consolidacionstatus'] = [
+    "pendiente" => 1,
+    "proceso" => 2,
+    "completado" => 3,
+    "anulado" => 4,
+    "reempacado" => 5
+];
+
 $CONFIG['status'] = [
     "active" => [
         "db" => "1",

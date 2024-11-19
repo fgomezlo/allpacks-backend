@@ -93,8 +93,7 @@ class Consolidacion extends Combo {
             "observacion" => $this->getObservacion(),
             "tiposervicio" => $this->getTipoServicio(),
             "codigo" => $this->getCodConsolidacion(),
-            "dateupdated" => $this->getDateUpdated(),
-            "datecreated" => $this->getDateUpdated()
+            "datecreated" => $this->getDateCreated()
         ];
         
         if($this->getIdcliente() != null) {

@@ -117,7 +117,7 @@ class ConsolidacionControl {
             if($foundwarehouse > 0) {
                 if($foundwarehouse == count($listPackages)) {
                     //change current status for reempacado
-                    $newStatus = $GLOBALS["config"]["consolidacionstatus"]["reempacado"];                    
+                    $newStatus = $GLOBALS["config"]["consolidacionstatus"]["pararreempaque"];                    
                 } else {
                     // change for proceso
                     $newStatus = $GLOBALS["config"]["consolidacionstatus"]["proceso"];                    

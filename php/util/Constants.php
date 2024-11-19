@@ -29,7 +29,8 @@ $CONFIG['consolidacionstatus'] = [
     "proceso" => 2,
     "completado" => 3,
     "anulado" => 4,
-    "reempacado" => 5
+    "reempacado" => 5,
+    "pararreempaque" => 6
 ];
 
 $CONFIG['status'] = [
